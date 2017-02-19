@@ -1,0 +1,36 @@
+language: cpp
+os: linux
+dist: trusty
+
+addons:
+  apt:
+    packages:
+      - openmpi-bin
+      - libopenmpi-dev
+      - environment-modules
+      - liblapack-dev
+      - libmatheval-dev
+      - gfortran
+#      - python-dev
+
+before_install:
+  - git clone https://github.com/plumed/plumed2.git $TRAVIS_BUILD_DIR/plumed_src
+  - cd $TRAVIS_BUILD_DIR/plumed_src
+  - git checkout v2.2.2
+  - ./configure --prefix=$TRAVIS_BUILD_DIR/plumed
+                CC=mpicc.openmpi
+                CXX=mpicxx.openmpi
+                FC=mpif90.openmpi
+                LIBS='-lstdc++ -lmpi_cxx'
+  - cat config.log
+  - make -j 4 && make install
+  # Enable "module" command. See http://askubuntu.com/questions/343692/module-load-command-does-not-work/343721
+  - module() { eval `/usr/bin/modulecmd bash $*`; }
+  - module use $HOME
+  - module load $TRAVIS_BUILD_DIR/plumed/lib/plumed/modulefile
+  - module list
+  - make -C regtest
+
+install: true
+
+script: true
