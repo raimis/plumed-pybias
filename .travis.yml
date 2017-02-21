@@ -1,35 +1,57 @@
-language: cpp
 os: linux
 dist: trusty
+language: cpp
+
+env:
+  PLUMED_VERSION=2.3.0
+  PLUMED_CONFIG=
+  CXX=mpicxx
 
 addons:
   apt:
     packages:
+      - environment-modules
       - openmpi-bin
       - libopenmpi-dev
-      - environment-modules
       - liblapack-dev
       - libmatheval-dev
-      - gfortran
 #      - python-dev
 
+cache:
+  directories:
+    - $HOME/opt
+
 before_install:
-  - git clone https://github.com/plumed/plumed2.git $TRAVIS_BUILD_DIR/plumed_src
-  - cd $TRAVIS_BUILD_DIR/plumed_src
-  - git checkout v2.2.2
-  - ./configure --prefix=$TRAVIS_BUILD_DIR/plumed
-                CC=mpicc.openmpi
-                CXX=mpicxx.openmpi
-                FC=mpif90.openmpi
-                LIBS='-lstdc++ -lmpi_cxx'
-  - cat config.log
-  - make -j 4 && make install
   # Enable "module" command. See http://askubuntu.com/questions/343692/module-load-command-does-not-work/343721
-  - module() { eval `/usr/bin/modulecmd bash $*`; }
-  - module use $HOME
-  - module load $TRAVIS_BUILD_DIR/plumed/lib/plumed/modulefile
-  - module list
-  - make -C regtest
+  - module() { eval `modulecmd bash $*`; }
+  # Set some variables for convience
+  - PLUMED_PREFIX=$HOME/opt/plumed
+  - PLUMED_URL=https://github.com/plumed/plumed2.git
+  - PLUMED_SRC=$HOME/src/plumed
+  # Clone Plumed repository
+  - if [ ! -d $PLUMED_PREFIX ]; then
+      git clone --branch v$PLUMED_VERSION --depth 1 $PLUMED_URL $PLUMED_SRC;
+    fi
+  # Configure Plumed
+  - if [ -d $PLUMED_SRC ]; then
+      cd $PLUMED_SRC &&
+      ./configure --prefix=$PLUMED_PREFIX $PLUMED_CONFIG;
+    fi
+  # Build & intall Plumed
+  - if [ -d $PLUMED_SRC ]; then
+      make -j 4 &&
+      make install;
+    fi
+  # Load Plumed module
+  - module use $PLUMED_PREFIX/lib/plumed
+  - module load modulefile
+  # Print some information about Plumed
+  - plumed info --root --configuration --long-version --git-version
+  # Run the regression tests of Plumed
+  - if [ -d $PLUMED_SRC ]; then
+      make -C regtest &&
+      make -C regtest checkfail;
+    fi
 
 install: true
 
