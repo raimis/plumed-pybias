@@ -1,1 +1,6 @@
+# https://github.com/pages-themes/cayman
+title: PyBias
+description: A PLUMED plug-in with an embeded Python interpreter 
+show_downloads: false
+google_analytics:
 theme: jekyll-theme-cayman

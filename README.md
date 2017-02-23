@@ -1,37 +1,63 @@
-## Welcome to GitHub Pages
 
-You can use the [editor on GitHub](https://github.com/raimis/plumed-pybias/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+**The site is still under construction!**
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+*PyBias* is a *PLUMED* plug-in with an embeded *Python* interpreter.
 
-### Markdown
+## Features
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+- All system *Python* modules can be used inside
+- Built-in module to access information from PLUMED
+- No PLUMED re-compilation needed
 
-```markdown
-Syntax highlighted code block
+# Example
 
-# Header 1
-## Header 2
-### Header 3
+```
+# plumed.dat
 
-- Bulleted
-- List
+LOAD FILE=libpybias.so
 
-1. Numbered
-2. List
+d: DISTANCE ATOMS=1,2
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+PYBIAS ARG=d
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+```python
+# bias.py
 
-### Jekyll Themes
+import numpy as np
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/raimis/plumed-pybias/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+def bias(position, force):
 
-### Support or Contact
+  force[:] = 0.
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+  return 0.
+```
+
+# Installation
+
+If your are lucky (*i.e.* your system already has all dependencies), it is just
+a 5-step process:
+```bash
+git clone https://github.com/raimis/plumed-pybias.git
+cd plumed-pybias
+cmake .
+make
+make install
+```
+
+## Dependencies
+
+### Run-time
+- Plumed
+- Python
+- Numpy
+- MPI4Py
+
+### Building
+- g++
+- cmake
+
+# Tutorial
+
+
+
