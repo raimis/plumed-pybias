@@ -2,5 +2,5 @@
 title: PyBias
 description: A PLUMED plug-in with an embeded Python interpreter 
 show_downloads: false
-google_analytics:
+google_analytics: UA-92560210-1
 theme: jekyll-theme-cayman
