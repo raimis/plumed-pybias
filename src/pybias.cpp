@@ -2,7 +2,8 @@
 Copyright (c) 2017 Raimondas Galvelis
 */
 
-#include <Python.h>
+#include "pybias.h"
+
 #include <link.h>
 #include <dlfcn.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -10,34 +11,14 @@ Copyright (c) 2017 Raimondas Galvelis
 #include <numpy/npy_math.h>
 #include <mpi4py/mpi4py.h>
 
-#include "plumed/bias/Bias.h"
-#include "plumed/bias/ActionRegister.h"
-#include "plumed/core/Atoms.h"
-#include "plumed/core/PlumedMain.h"
-#include "plumed/tools/Communicator.h"
+#include <plumed/bias/ActionRegister.h>
+#include <plumed/core/Atoms.h>
+#include <plumed/core/PlumedMain.h>
+#include <plumed/tools/Communicator.h>
 
 using namespace std;
 
-namespace PLMD{
-namespace bias{
-
-class PyBias: public Bias
-{
-  vector<Value*> args; // Extra arguments
-
-  PyObject* function; // Python function object
-
-  PyObject* input; // Numpy array for input values
-  PyObject* force; // Numpy array for bias forces
-  PyObject* extra; // Numpy array for extra values
-
-public:
-  static void registerKeywords(Keywords&);
-  explicit PyBias(const ActionOptions&);
-  ~PyBias();
-  void calculate();
-  unsigned getNumberOfExtraArguments() const;
-};
+namespace PLMD::bias{
 
 PLUMED_REGISTER_ACTION(PyBias, "PYBIAS")
 
@@ -281,5 +262,4 @@ inline unsigned PyBias::getNumberOfExtraArguments() const
   return args.size();
 }
 
-} // namespace bias
-} // namespace PLMD
+}
