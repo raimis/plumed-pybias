@@ -27,7 +27,7 @@ add_definitions(-D__PLUMED_HAS_MPI) # TODO check PLUMED
 include_directories(${MPI4PY_INCLUDE_DIR})
 include_directories(/usr/lib64/python2.7/site-packages/openmpi/mpi4py/include) # TODO remove
 
-add_library(pybias MODULE pybias.cpp)
+add_library(pybias MODULE pybias pybias_plumed)
 # TODO remove direct linking to Python library
 target_link_libraries(pybias python2.7)
 

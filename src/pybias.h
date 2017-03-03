@@ -8,8 +8,9 @@ Copyright (c) 2017 Raimondas Galvelis
 #include <Python.h>
 #include <plumed/bias/Bias.h>
 
-namespace PLMD::bias
-{
+namespace PLMD{
+namespace bias{
+
   class PyBias: public Bias
   {
     std::vector<Value*> args; // Extra arguments
@@ -27,6 +28,7 @@ namespace PLMD::bias
     void calculate();
     unsigned getNumberOfExtraArguments() const;
   };
-}
+
+}}
 
 #endif

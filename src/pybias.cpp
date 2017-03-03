@@ -3,22 +3,23 @@ Copyright (c) 2017 Raimondas Galvelis
 */
 
 #include "pybias.h"
+#include "pybias_plumed.h"
 
 #include <link.h>
 #include <dlfcn.h>
+
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 #include <numpy/npy_math.h>
+
 #include <mpi4py/mpi4py.h>
 
 #include <plumed/bias/ActionRegister.h>
-#include <plumed/core/Atoms.h>
-#include <plumed/core/PlumedMain.h>
-#include <plumed/tools/Communicator.h>
 
 using namespace std;
 
-namespace PLMD::bias{
+namespace PLMD{
+namespace bias{
 
 PLUMED_REGISTER_ACTION(PyBias, "PYBIAS")
 
@@ -33,66 +34,6 @@ void PyBias::registerKeywords(Keywords& keys)
   componentsAreNotOptional(keys);
   keys.addOutputComponent("bias", "default", "bias");
 }
-
-// Pointer to currecnt action
-static Action* action = NULL;
-
-// Implementation of plumed.getStep
-static PyObject* getStep(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  return PyInt_FromLong(action->getStep());
-}
-
-// Implementation of plumed.getComm
-static PyObject* getComm(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  return PyMPIComm_New(action->comm.Get_comm());
-}
-
-// Implementation of plumed.getMultiSimComm
-static PyObject* getMultiSimComm(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  return PyMPIComm_New(action->multi_sim_comm.Get_comm());
-}
-
-// Implementation of plumed.getKbT
-static PyObject* getKbT(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  return PyFloat_FromDouble(action->plumed.getAtoms().getKbT());
-}
-
-// Implementation of plumed.getNumArgs
-static PyObject* getNumArgs(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  Bias *bias = dynamic_cast<Bias*>(action);
-  plumed_assert(bias);
-  return PyInt_FromLong(bias->getNumberOfArguments());
-}
-
-// Implementation of plumed.getNumExArgs
-static PyObject* getNumExArgs(PyObject* self, PyObject* args)
-{
-  plumed_assert(action);
-  PyBias *bias = dynamic_cast<PyBias*>(action);
-  plumed_assert(bias);
-  return PyInt_FromLong(bias->getNumberOfExtraArguments());
-}
-
-// Python functions
-static PyMethodDef functions[] = {
-    {"getStep", getStep, METH_NOARGS, NULL},
-    {"getComm", getComm, METH_NOARGS, NULL},
-    {"getMultiSimComm", getMultiSimComm, METH_NOARGS, NULL},
-    {"getKbT", getKbT, METH_NOARGS, NULL},
-    {"getNumArgs", getNumArgs, METH_NOARGS, NULL},
-    {"getNumExArgs", getNumExArgs, METH_NOARGS, NULL},
-    {NULL, NULL, 0, NULL}
-};
 
 PyBias::PyBias(const ActionOptions& ao):
 PLUMED_BIAS_INIT(ao),
@@ -126,12 +67,11 @@ args(0)
   log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
 
   // Initialize a built-in module
-  PyObject* module = Py_InitModule("plumed", functions); // Borrowed reference
-  plumed_assert(module);
+  initModule();
 
   // Import Numpy
   import_array();
-  module = PyImport_ImportModule("numpy"); // New reference
+  PyObject* module = PyImport_ImportModule("numpy"); // New reference
   if (!module)
   {
     PyErr_Print();
@@ -174,7 +114,7 @@ args(0)
   checkRead();
 
   // Set the context to the Python module
-  action = this;
+  setAction(this);
 
   // Run the Python script
   FILE* fp = fopen(filename.c_str(), "r");
@@ -232,7 +172,7 @@ void PyBias::calculate()
     *(npy_double*)PyArray_GETPTR1((PyArrayObject*)extra, i) = args[i]->get();
 
   // Set the action pointer
-  action = this;
+  setAction(this);
 
   // Call the Python function
   PyObject* bias = PyObject_CallFunctionObjArgs(function, input, force, extra,
@@ -257,9 +197,9 @@ void PyBias::calculate()
   }
 }
 
-inline unsigned PyBias::getNumberOfExtraArguments() const
+unsigned PyBias::getNumberOfExtraArguments() const
 {
   return args.size();
 }
 
-}
+}}
