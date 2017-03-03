@@ -19,6 +19,7 @@ addons:
       - libmatheval-dev
 
 cache:
+  pip: true
   directories:
     - $HOME/opt
 
