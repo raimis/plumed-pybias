@@ -1,0 +1,7 @@
+LOAD FILE=libpybias.so
+
+val1: CONSTANT VALUE=42
+
+PYBIAS ARG=val1 FILE=foo.py
+
+ENDPLUMED

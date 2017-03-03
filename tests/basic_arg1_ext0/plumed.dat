@@ -1,0 +1,7 @@
+LOAD FILE=libpybias.so
+
+const: CONSTANT VALUE=42
+
+PYBIAS ARG=const
+
+ENDPLUMED

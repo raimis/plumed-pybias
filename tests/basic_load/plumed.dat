@@ -1,0 +1,3 @@
+LOAD FILE=libpybias.so
+
+ENDPLUMED
