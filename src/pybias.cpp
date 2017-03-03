@@ -21,185 +21,185 @@ using namespace std;
 namespace PLMD{
 namespace bias{
 
-PLUMED_REGISTER_ACTION(PyBias, "PYBIAS")
+  PLUMED_REGISTER_ACTION(PyBias, "PYBIAS")
 
-void PyBias::registerKeywords(Keywords& keys)
-{
-  Bias::registerKeywords(keys);
-  keys.use("ARG");
-  keys.add("compulsory", "FILE", "bias.py",
-           "the name of a file containing a python scrip.");
-  keys.add("optional", "EXTRA",
-           "extra argument");
-  componentsAreNotOptional(keys);
-  keys.addOutputComponent("bias", "default", "bias");
-}
-
-PyBias::PyBias(const ActionOptions& ao):
-PLUMED_BIAS_INIT(ao),
-args(0)
-{
-  // Parse EXTRA keyword for extra arguments
-  if (keywords.exists("EXTRA"))
+  void PyBias::registerKeywords(Keywords& keys)
   {
-    parseArgumentList("EXTRA", args);
-    log.printf("  with extra arguments");
-    for (unsigned i=0; i<args.size(); i++)
+    Bias::registerKeywords(keys);
+    keys.use("ARG");
+    keys.add("compulsory", "FILE", "bias.py",
+             "the name of a file containing a python scrip.");
+    keys.add("optional", "EXTRA",
+             "extra argument");
+    componentsAreNotOptional(keys);
+    keys.addOutputComponent("bias", "default", "bias");
+  }
+
+  PyBias::PyBias(const ActionOptions& ao):
+  PLUMED_BIAS_INIT(ao),
+  args(0)
+  {
+    // Parse EXTRA keyword for extra arguments
+    if (keywords.exists("EXTRA"))
     {
-      addDependency(args[i]->getPntrToAction());
-      log.printf(" %s", args[i]->getName().c_str());
+      parseArgumentList("EXTRA", args);
+      log.printf("  with extra arguments");
+      for (unsigned i=0; i<args.size(); i++)
+      {
+        addDependency(args[i]->getPntrToAction());
+        log.printf(" %s", args[i]->getName().c_str());
+      }
+      log.printf("\n");
     }
-    log.printf("\n");
+
+    //Initialize Python interpreter
+    if (!Py_IsInitialized())
+      Py_Initialize();
+
+    // Preload Python run-time library
+    // Cannot use DLLLoader, it loads with RTLD_LOCAL flag
+    void* handle = dlopen(LDLIBRARY, RTLD_NOW|RTLD_GLOBAL);
+    if (!handle)
+      plumed_merror(dlerror()); // plumed_massert does not work here!
+    link_map *map;
+    if (dlinfo(handle, RTLD_DI_LINKMAP, &map))
+      plumed_merror(dlerror()); // plumed_massert does not work here!
+    log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
+
+    // Initialize a built-in module
+    initModule();
+
+    // Import Numpy
+    import_array();
+    PyObject* module = PyImport_ImportModule("numpy"); // New reference
+    if (!module)
+    {
+      PyErr_Print();
+      plumed_merror("numpy import failed. See for an error message above");
+    }
+    PyObject* version = PyObject_GetAttrString(module, "__version__"); // New reference
+    plumed_assert(version);
+    PyObject* str = PyObject_Str(module); // New reference
+    plumed_assert(str);
+    Py_DECREF(module);
+    log.printf("  using numpy %s %s\n", PyString_AsString(version),
+               PyString_AsString(str));
+    Py_DECREF(version);
+    Py_DECREF(str);
+
+    // Import mpi4py
+    import_mpi4py();
+    module = PyImport_ImportModule("mpi4py"); // New reference
+    if (!module)
+    {
+      PyErr_Print();
+      plumed_merror("mpi4py import failed. See for an error message above");
+    }
+    version = PyObject_GetAttrString(module, "__version__"); // New reference
+    plumed_assert(version);
+    str = PyObject_Str(module); // New reference
+    plumed_assert(str);
+    Py_DECREF(module);
+    log.printf("  using mpi4py %s %s\n", PyString_AsString(version),
+               PyString_AsString(str));
+    Py_DECREF(version);
+    Py_DECREF(str);
+
+    // Parse FILE and NAME keywords
+    string filename, funcname;
+    parse("FILE", filename);
+    log.printf("  using Python script %s\n", filename.c_str());
+
+    // Check if all keywords have been read
+    checkRead();
+
+    // Set the context to the Python module
+    setAction(this);
+
+    // Run the Python script
+    FILE* fp = fopen(filename.c_str(), "r");
+    plumed_massert(!PyRun_SimpleFile(fp, filename.c_str()),
+                   "Python script failed. See for an error message above");
+    fclose(fp);
+
+    // Extract the Python function
+    PyObject* main = PyImport_AddModule("__main__");
+    plumed_assert(main);
+    function = PyObject_GetAttrString(main, "bias"); // New reference
+    plumed_massert(function, "Cannot find the Python function in the file");
+    plumed_massert(PyCallable_Check(function),
+                   "The Python function is not callable");
+
+    // Allocate the Numpy arrays
+    npy_intp dims[1];
+    dims[0] = getNumberOfArguments();
+    input = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
+    plumed_assert(input);
+    force = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
+    plumed_assert(force);
+    dims[0] = args.size();
+    extra = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
+    plumed_assert(extra);
+
+    // Setup components
+    addComponent("bias");
+    componentIsNotPeriodic("bias");
   }
 
-  //Initialize Python interpreter
-  if (!Py_IsInitialized())
-    Py_Initialize();
-
-  // Preload Python run-time library
-  // Cannot use DLLLoader, it loads with RTLD_LOCAL flag
-  void* handle = dlopen(LDLIBRARY, RTLD_NOW|RTLD_GLOBAL);
-  if (!handle)
-    plumed_merror(dlerror()); // plumed_massert does not work here!
-  link_map *map;
-  if (dlinfo(handle, RTLD_DI_LINKMAP, &map))
-    plumed_merror(dlerror()); // plumed_massert does not work here!
-  log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
-
-  // Initialize a built-in module
-  initModule();
-
-  // Import Numpy
-  import_array();
-  PyObject* module = PyImport_ImportModule("numpy"); // New reference
-  if (!module)
+  PyBias::~PyBias()
   {
-    PyErr_Print();
-    plumed_merror("numpy import failed. See for an error message above");
-  }
-  PyObject* version = PyObject_GetAttrString(module, "__version__"); // New reference
-  plumed_assert(version);
-  PyObject* str = PyObject_Str(module); // New reference
-  plumed_assert(str);
-  Py_DECREF(module);
-  log.printf("  using numpy %s %s\n", PyString_AsString(version),
-             PyString_AsString(str));
-  Py_DECREF(version);
-  Py_DECREF(str);
+    // Deallocate the Python objects
+    Py_DECREF(function);
+    Py_DECREF(input);
+    Py_DECREF(force);
+    Py_DECREF(extra);
 
-  // Import mpi4py
-  import_mpi4py();
-  module = PyImport_ImportModule("mpi4py"); // New reference
-  if (!module)
+    // Finalize the Python interpreter
+    Py_Finalize();
+  }
+
+  void PyBias::calculate()
   {
-    PyErr_Print();
-    plumed_merror("mpi4py import failed. See for an error message above");
+    // Fill the Numpy arrays with the input values and NaNs
+    for (npy_intp i=0; i<getNumberOfArguments(); i++)
+    {
+      *(npy_double*)PyArray_GETPTR1((PyArrayObject*)input, i) = getArgument(i);
+      *(npy_double*)PyArray_GETPTR1((PyArrayObject*)force, i) = NPY_NAN;
+    }
+
+    // Fill the Numpy array with extra values
+    for (npy_intp i=0; i<(npy_intp)args.size(); i++)
+      *(npy_double*)PyArray_GETPTR1((PyArrayObject*)extra, i) = args[i]->get();
+
+    // Set the action pointer
+    setAction(this);
+
+    // Call the Python function
+    PyObject* bias = PyObject_CallFunctionObjArgs(function, input, force, extra,
+                                                  NULL); // New reference
+    if (!bias)
+    {
+      PyErr_Print();
+      plumed_merror("The Python function failed. See for an error message above");
+    }
+
+    // Process the Python function result
+    plumed_massert(PyFloat_Check(bias), "The Python function has to return a Python float");
+    getPntrToComponent(0)->set(PyFloat_AS_DOUBLE(bias));
+    Py_DECREF(bias);
+
+    // Process the force array
+    for (npy_intp i=0; i<getNumberOfArguments(); i++)
+    {
+      double f = *(npy_double*)PyArray_GETPTR1((PyArrayObject*)force, i);
+      plumed_massert(!npy_isnan(f), "The force array contains a NaN value");
+      setOutputForce(i, f);
+    }
   }
-  version = PyObject_GetAttrString(module, "__version__"); // New reference
-  plumed_assert(version);
-  str = PyObject_Str(module); // New reference
-  plumed_assert(str);
-  Py_DECREF(module);
-  log.printf("  using mpi4py %s %s\n", PyString_AsString(version),
-             PyString_AsString(str));
-  Py_DECREF(version);
-  Py_DECREF(str);
 
-  // Parse FILE and NAME keywords
-  string filename, funcname;
-  parse("FILE", filename);
-  log.printf("  using Python script %s\n", filename.c_str());
-
-  // Check if all keywords have been read
-  checkRead();
-
-  // Set the context to the Python module
-  setAction(this);
-
-  // Run the Python script
-  FILE* fp = fopen(filename.c_str(), "r");
-  plumed_massert(!PyRun_SimpleFile(fp, filename.c_str()),
-                 "Python script failed. See for an error message above");
-  fclose(fp);
-
-  // Extract the Python function
-  PyObject* main = PyImport_AddModule("__main__");
-  plumed_assert(main);
-  function = PyObject_GetAttrString(main, "bias"); // New reference
-  plumed_massert(function, "Cannot find the Python function in the file");
-  plumed_massert(PyCallable_Check(function),
-                 "The Python function is not callable");
-
-  // Allocate the Numpy arrays
-  npy_intp dims[1];
-  dims[0] = getNumberOfArguments();
-  input = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
-  plumed_assert(input);
-  force = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
-  plumed_assert(force);
-  dims[0] = args.size();
-  extra = PyArray_SimpleNew(1, &dims[0], NPY_DOUBLE); // New reference
-  plumed_assert(extra);
-
-  // Setup components
-  addComponent("bias");
-  componentIsNotPeriodic("bias");
-}
-
-PyBias::~PyBias()
-{
-  // Deallocate the Python objects
-  Py_DECREF(function);
-  Py_DECREF(input);
-  Py_DECREF(force);
-  Py_DECREF(extra);
-
-  // Finalize the Python interpreter
-  Py_Finalize();
-}
-
-void PyBias::calculate()
-{
-  // Fill the Numpy arrays with the input values and NaNs
-  for (npy_intp i=0; i<getNumberOfArguments(); i++)
+  unsigned PyBias::getNumberOfExtraArguments() const
   {
-    *(npy_double*)PyArray_GETPTR1((PyArrayObject*)input, i) = getArgument(i);
-    *(npy_double*)PyArray_GETPTR1((PyArrayObject*)force, i) = NPY_NAN;
+    return args.size();
   }
-
-  // Fill the Numpy array with extra values
-  for (npy_intp i=0; i<(npy_intp)args.size(); i++)
-    *(npy_double*)PyArray_GETPTR1((PyArrayObject*)extra, i) = args[i]->get();
-
-  // Set the action pointer
-  setAction(this);
-
-  // Call the Python function
-  PyObject* bias = PyObject_CallFunctionObjArgs(function, input, force, extra,
-                                                NULL); // New reference
-  if (!bias)
-  {
-    PyErr_Print();
-    plumed_merror("The Python function failed. See for an error message above");
-  }
-
-  // Process the Python function result
-  plumed_massert(PyFloat_Check(bias), "The Python function has to return a Python float");
-  getPntrToComponent(0)->set(PyFloat_AS_DOUBLE(bias));
-  Py_DECREF(bias);
-
-  // Process the force array
-  for (npy_intp i=0; i<getNumberOfArguments(); i++)
-  {
-    double f = *(npy_double*)PyArray_GETPTR1((PyArrayObject*)force, i);
-    plumed_massert(!npy_isnan(f), "The force array contains a NaN value");
-    setOutputForce(i, f);
-  }
-}
-
-unsigned PyBias::getNumberOfExtraArguments() const
-{
-  return args.size();
-}
 
 }}
