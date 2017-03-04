@@ -5,9 +5,12 @@ python:
   - "2.7"
 
 env:
-  PLUMED_VERSION=2.2.4
-  PLUMED_CONFIG=
-  CXX=mpicxx
+  - PLUMED_VERSION=2.2.4
+    PLUMED_CONFIG=
+    CXX=mpicxx
+  - PLUMED_VERSION=2.3.0
+    PLUMED_CONFIG=
+    CXX=mpicxx
 
 addons:
   apt:
