@@ -31,8 +31,12 @@ namespace bias{
              "the name of a file containing a python scrip.");
     keys.add("optional", "EXTRA",
              "extra argument");
-    componentsAreNotOptional(keys);
-    keys.addOutputComponent("bias", "default", "bias");
+    // HACK fix for PLUMED 2.3.x, remove after finish support for 2.2.x
+    if (!keys.outputComponentExists("bias", false))
+    {
+      componentsAreNotOptional(keys);
+      keys.addOutputComponent("bias", "default", "bias");
+    }
   }
 
   PyBias::PyBias(const ActionOptions& ao):
@@ -142,8 +146,13 @@ namespace bias{
     plumed_assert(extra);
 
     // Setup components
-    addComponent("bias");
-    componentIsNotPeriodic("bias");
+    // HACK fix for PLUMED 2.3.x, remove after finish support for 2.2.x
+    if (getNumberOfComponents() == 0)
+    {
+      addComponent("bias");
+      componentIsNotPeriodic("bias");
+    }
+
   }
 
   PyBias::~PyBias()
