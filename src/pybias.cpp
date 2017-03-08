@@ -12,8 +12,6 @@ Copyright (c) 2017 Raimondas Galvelis
 #include <numpy/ndarrayobject.h>
 #include <numpy/npy_math.h>
 
-#include <mpi4py/mpi4py.h>
-
 #include <plumed/bias/ActionRegister.h>
 
 using namespace std;
@@ -70,9 +68,6 @@ namespace bias{
       plumed_merror(dlerror()); // plumed_massert does not work here!
     log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
 
-    // Initialize a built-in module
-    initModule();
-
     // Import Numpy
     import_array();
     PyObject* module = PyImport_ImportModule("numpy"); // New reference
@@ -92,7 +87,6 @@ namespace bias{
     Py_DECREF(str);
 
     // Import mpi4py
-    import_mpi4py();
     module = PyImport_ImportModule("mpi4py"); // New reference
     if (!module)
     {
@@ -117,7 +111,8 @@ namespace bias{
     // Check if all keywords have been read
     checkRead();
 
-    // Set the context to the Python module
+    // Initialize the built-in module and set it's context
+    initModule();
     setAction(this);
 
     // Run the Python script

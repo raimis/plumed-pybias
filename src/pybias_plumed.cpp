@@ -76,7 +76,11 @@ namespace bias{
 
   void initModule()
   {
-    plumed_assert(Py_InitModule("plumed", functions)); // Borrowed reference
+    // Import mpi4py C-API
+    plumed_massert(!import_mpi4py(), "mpi4py C-API import failed");
+
+    // Initialize the built-in module
+    plumed_assert(Py_InitModule("plumed", functions));
   }
 
   void setAction(Action* action_)
