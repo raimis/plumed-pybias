@@ -67,8 +67,6 @@ install:
   - mkdir -pv $PYBIAS_BUILD && cd $PYBIAS_BUILD
   # Configure & build PyBias
   - cmake $PYBIAS_SRC
-          -DNUMPY_INCLUDE_DIR=$(python -c 'import numpy; print numpy.get_include()')
-          -DMPI4PY_INCLUDE_DIR=$(python -c 'import mpi4py; print mpi4py.get_include()')
   - make VERBOSE=1
 
 script:
