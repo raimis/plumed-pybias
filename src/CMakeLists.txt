@@ -8,8 +8,6 @@ include_directories(~/opt/plumed/2.2.2/include) # TODO remove
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED) # TODO different version is found
 include_directories(${PYTHON_INCLUDE_DIR})
-get_filename_component(PYTHON_LIBRARY_NAME ${PYTHON_LIBRARY} NAME)
-add_definitions(-DLDLIBRARY="${PYTHON_LIBRARY_NAME}")
 
 # Find NumPy
 #find_package(NumPy REQUIRED)
@@ -28,6 +26,5 @@ include_directories(${MPI4PY_INCLUDE_DIR})
 include_directories(/usr/lib64/python2.7/site-packages/openmpi/mpi4py/include) # TODO remove
 
 add_library(pybias MODULE pybias pybias_plumed)
-# TODO remove direct linking to Python library
-target_link_libraries(pybias python2.7)
+target_link_libraries(pybias ${PYTHON_LIBRARY})
 

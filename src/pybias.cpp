@@ -5,14 +5,15 @@ Copyright (c) 2017 Raimondas Galvelis
 #include "pybias.h"
 #include "pybias_plumed.h"
 
-#include <link.h>
-#include <dlfcn.h>
-
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 #include <numpy/npy_math.h>
 
 #include <plumed/bias/ActionRegister.h>
+
+#include <link.h>
+#include <string>
+#include <dlfcn.h>
 
 using namespace std;
 
@@ -37,6 +38,22 @@ namespace bias{
     }
   }
 
+
+  // Callback function for dl_iterate_phdr
+  int callback(dl_phdr_info* info, size_t size, void* path_)
+  {
+    string path = info->dlpi_name;
+
+    if (path.size() == 0) return 0;
+    size_t i = path.rfind("/");
+    if (i == string::npos) return 0;
+    if (path.substr(i+1).find("libpython") == string::npos) return 0;
+
+    *(string*)path_ = path;
+
+    return 0;
+  }
+
   PyBias::PyBias(const ActionOptions& ao):
   PLUMED_BIAS_INIT(ao),
   args(0)
@@ -58,9 +75,14 @@ namespace bias{
     if (!Py_IsInitialized())
       Py_Initialize();
 
-    // Preload Python run-time library
+    // Get Python library name
+    string PyLibPath;
+    plumed_assert(!dl_iterate_phdr(callback, (void*)&PyLibPath));
+
+    // Reload Python library globally
+    // Solve the problem with "math" module loading
     // Cannot use DLLLoader, it loads with RTLD_LOCAL flag
-    void* handle = dlopen(LDLIBRARY, RTLD_NOW|RTLD_GLOBAL);
+    void* handle = dlopen(PyLibPath.c_str(), RTLD_NOW|RTLD_GLOBAL);
     if (!handle)
       plumed_merror(dlerror()); // plumed_massert does not work here!
     link_map *map;
