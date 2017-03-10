@@ -1,63 +1,76 @@
 
-**The site is still under construction!**
+**This project is still under construction!**
 
-*PyBias* is a *PLUMED* plug-in with an embeded *Python* interpreter.
+*PyBias* is a [PLUMED](http://www.plumed.org/) plug-in with an embedded
+[Python](http://www.python.org/) interpreter.
+It is intended for a quick prototyping of enhanced sampling methods.
+The goal of *PyBias* is bridge the gap between *PLUMED* and *Python*. 
 
-## Features
+*PLUMED* is a library for free energy calculations with molecular dynamics
+(MD).
+The calculations can be performed as a function of various collective variables
+(CV), using state-of-the-art enhanced sampling methods: metadynamics,
+parallel-bias metadynamics, *etc.*
+*PLUMED* works with [most MD engines](http://www.plumed.org/md-engines).
 
-- All system *Python* modules can be used inside
-- Built-in module to access information from PLUMED
-- No PLUMED re-compilation needed
+*Python* environment has a variety of high-quality numerical algorithm
+([NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/),
+[SimPy](http://www.sympy.org/), *etc.*) and machine learning
+([scikit-learn](http://scikit-learn.org/),
+[Theano](http://www.deeplearning.net/software/theano/),
+[TensorFlow](http://www.tensorflow.org/), *etc.*) libraries, which can be used
+to compute bias.
 
-# Example
+## Key Features
 
+- Can use a system or custom *Python* interpreter
+- All installed *Python* modules can be used
+- A built-in *Python* module to access data from *PLUMED*
+- No *PLUMED* re-compilation required
+
+## Quick Installation
+
+If your are lucky (*i.e.* your system has all dependencies), it is just
+a 5-step process:
+```bash
+git clone https://github.com/raimis/plumed-pybias.git
+cd plumed-pybias
+cmake . -DCMAKE_INSTALL_PREFIX=~/opt/pybias
+make
+make install
 ```
+If it does not work, read the detailed [installation instructions]().
+
+## Simple Example
+
+**This is not yet functional!**
+
+```bash
 # plumed.dat
 
+# Load PyBias plug-in
 LOAD FILE=libpybias.so
 
-d: DISTANCE ATOMS=1,2
+# Create a collective variable
+dist: DISTANCE ATOMS=1,2
 
-PYBIAS ARG=d
+# Creat a PyBias action, which executes "bias.py"
+PYBIAS ARG=dist
+
+ENDPLUMED
 ```
 
 ```python
 # bias.py
 
-import numpy as np
-
-def bias(position, force):
-
-  force[:] = 0.
-
-  return 0.
+def bias(coord, force, extra):
+    force[:] = 0.
+    return 0.
 ```
 
-# Installation
+## License
 
-If your are lucky (*i.e.* your system already has all dependencies), it is just
-a 5-step process:
-```bash
-git clone https://github.com/raimis/plumed-pybias.git
-cd plumed-pybias
-cmake .
-make
-make install
-```
-
-## Dependencies
-
-### Run-time
-- Plumed
-- Python
-- Numpy
-- MPI4Py
-
-### Building
-- g++
-- cmake
-
-# Tutorial
-
-
+*PyBias* is released under
+[GNU Lesser General Public License](https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
+(LGPL v3).
 
