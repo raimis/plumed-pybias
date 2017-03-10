@@ -63,11 +63,14 @@ before_install:
 install:
   - PYBIAS_SRC=$TRAVIS_BUILD_DIR
   - PYBIAS_BUILD=$HOME/pybias.build
+  - PYBIAS_INSTALL=$HOME/pybias.install
   # Create a build directory
   - mkdir -pv $PYBIAS_BUILD && cd $PYBIAS_BUILD
   # Configure & build PyBias
-  - cmake $PYBIAS_SRC
+  - cmake $PYBIAS_SRC -DCMAKE_INSTALL_PREFIX=$PYBIAS_INSTALL
   - make VERBOSE=1
+  - make install VERBOSE=1
 
 script:
+  - diff src/libpybias.so $PYBIAS_INSTALL/lib/libpybias.so
   - make test CTEST_OUTPUT_ON_FAILURE=1
