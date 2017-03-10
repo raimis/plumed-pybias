@@ -1,8 +1,7 @@
 
 # Find PLUMED
-#find_package(PLUMED REQUIRED)
+find_package(PLUMED REQUIRED)
 include_directories(${PLUMED_INCLUDE_DIR})
-include_directories(~/opt/plumed/2.2.2/include) # TODO remove
 
 # Find Python
 find_package(PythonInterp REQUIRED)
