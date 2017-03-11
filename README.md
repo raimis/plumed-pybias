@@ -1,3 +1,7 @@
+[![image](https://travis-ci.org/raimis/plumed-pybias.svg?branch=master)](https://travis-ci.org/raimis/plumed-pybias)
+[![image](https://readthedocs.org/projects/plumed-pybias/badge/?version=latest)](http://plumed-pybias.readthedocs.io/en/latest)
+
+# Introduction
 
 **This project is still under construction!**
 
@@ -20,16 +24,14 @@ sampling methods: metadynamics, parallel-bias metadynamics, *etc.*
 [TensorFlow](http://www.tensorflow.org/), *etc.*) libraries, which can
 be used to compute bias.
 
-Key Features
-------------
+## Key Features
 
 -   Can use a system or custom *Python* interpreter
 -   All installed *Python* modules can be used
 -   A built-in *Python* module to access data from *PLUMED*
 -   No *PLUMED* re-compilation required
 
-Quick Installation
-------------------
+## Quick Installation
 
 If your are lucky (*i.e.* your system has all dependencies), it is just
 a 5-step process:
@@ -42,8 +44,7 @@ make
 make install
 ```
 
-Simple Example
---------------
+## Working Example
 
 **This is not yet functional!**
 
@@ -70,8 +71,7 @@ def bias(coord, force, extra):
     return 0.
 ```
 
-License
--------
+## License
 
 *PyBias* is released under [GNU Lesser General Public
 License](https://www.gnu.org/licenses/lgpl-3.0-standalone.html) (LGPL

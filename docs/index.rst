@@ -1,6 +1,6 @@
 
-PyBias: a PLUMED plug-in with embeded Python
-============================================
+PyBias: PLUMED plug-in with embedded Python
+===========================================
 
 .. toctree::
    :maxdepth: 0
@@ -10,11 +10,3 @@ PyBias: a PLUMED plug-in with embeded Python
    tutorial.rst
 
 .. include:: intro.rst
-
-..  Indices and tables
-    ==================
-
-..  * :ref:`genindex`
-    * :ref:`modindex`
-    * :ref:`search`
-
