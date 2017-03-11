@@ -1,8 +1,6 @@
 [![image](https://travis-ci.org/raimis/plumed-pybias.svg?branch=master)](https://travis-ci.org/raimis/plumed-pybias)
 [![image](https://readthedocs.org/projects/plumed-pybias/badge/?version=latest)](http://plumed-pybias.readthedocs.io/en/latest)
 
-# Introduction
-
 **This project is still under construction!**
 
 *PyBias* is a [PLUMED](http://www.plumed.org/) plug-in with an embedded
@@ -19,7 +17,7 @@ sampling methods: metadynamics, parallel-bias metadynamics, *etc.*
 *Python* environment has a variety of high-quality numerical algorithm
 ([NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/),
 [SimPy](http://www.sympy.org/), *etc.*) and machine learning
-([scikit-learn](http://scikit-learn.org/),
+([scikit-learn](http://www.scikit-learn.org/),
 [Theano](http://www.deeplearning.net/software/theano/),
 [TensorFlow](http://www.tensorflow.org/), *etc.*) libraries, which can
 be used to compute bias.

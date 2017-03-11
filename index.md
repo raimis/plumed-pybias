@@ -15,7 +15,7 @@ sampling methods: metadynamics, parallel-bias metadynamics, *etc.*
 *Python* environment has a variety of high-quality numerical algorithm
 ([NumPy](http://www.numpy.org/), [SciPy](http://www.scipy.org/),
 [SimPy](http://www.sympy.org/), *etc.*) and machine learning
-([scikit-learn](http://scikit-learn.org/),
+([scikit-learn](http://www.scikit-learn.org/),
 [Theano](http://www.deeplearning.net/software/theano/),
 [TensorFlow](http://www.tensorflow.org/), *etc.*) libraries, which can
 be used to compute bias.

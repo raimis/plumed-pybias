@@ -18,7 +18,7 @@ engines <http://www.plumed.org/md-engines>`__.
 *Python* environment has a variety of high-quality numerical algorithm
 (`NumPy <http://www.numpy.org/>`__, `SciPy <http://www.scipy.org/>`__,
 `SimPy <http://www.sympy.org/>`__, *etc.*) and machine learning
-(`scikit-learn <http://scikit-learn.org/>`__,
+(`scikit-learn <http://www.scikit-learn.org/>`__,
 `Theano <http://www.deeplearning.net/software/theano/>`__,
 `TensorFlow <http://www.tensorflow.org/>`__, *etc.*) libraries, which
 can be used to compute bias.
