@@ -89,6 +89,9 @@ namespace bias{
     NULL,
     -1,
     functionDefinitions,
+    NULL,
+    NULL,
+    NULL,
     NULL
   };
 
