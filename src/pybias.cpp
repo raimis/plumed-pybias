@@ -73,8 +73,8 @@ namespace bias{
       log.printf("\n");
     }
 
-    if (!Py_IsInitialized())
-    {
+    //if (!Py_IsInitialized())
+    //{
 #if PY_MAJOR_VERSION > 2
       // Add a built-in module
       plumed_assert(!PyImport_AppendInittab("plumed", PyInit_plumed));
@@ -87,7 +87,7 @@ namespace bias{
       // Initialize the built-in module
       initModule();
 #endif
-    }
+    //}
 
     // Get Python library name
     string PyLibPath;
