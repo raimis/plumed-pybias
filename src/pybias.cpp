@@ -73,8 +73,14 @@ namespace bias{
       log.printf("\n");
     }
 
-    //Initialize Python interpreter
     if (!Py_IsInitialized())
+
+#if PY_MAJOR_VERSION > 2
+      // Add a built-in module
+      plumed_assert(!PyImport_AppendInittab("plumed", PyInit_plumed));
+#endif
+
+      //Initialize Python interpreter
       Py_Initialize();
 
     // Get Python library name
@@ -135,8 +141,11 @@ namespace bias{
     // Check if all keywords have been read
     checkRead();
 
-    // Initialize the built-in module and set it's context
+#if PY_MAJOR_VERSION < 3
+    // Initialize the built-in module
     initModule();
+#endif
+    // Set the context of the module
     setAction(this);
 
     // Run the Python script

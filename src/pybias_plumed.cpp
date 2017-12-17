@@ -63,7 +63,7 @@ namespace bias{
     return PyLong_FromLong(bias->getNumberOfExtraArguments());
   }
 
-  // Python functions
+  // Python module function definitions
   static PyMethodDef functions[] = {
     {"getStep", getStep, METH_NOARGS, NULL},
     {"getComm", getComm, METH_NOARGS, NULL},
@@ -74,13 +74,34 @@ namespace bias{
     {NULL, NULL, 0, NULL}
   };
 
+#if PY_MAJOR_VERSION < 3
   void initModule()
+#else
+
+  // Python module definition
+  static struct PyModuleDef module = {
+    PyModuleDef_HEAD_INIT,
+    "plumed",
+    NULL,
+    -1,
+    functions,
+    NULL
+  };
+
+  PyMODINIT_FUNC PyInit_plumed()
+#endif
   {
     // Import mpi4py C-API
     plumed_massert(!import_mpi4py(), "mpi4py C-API import failed");
 
     // Initialize the built-in module
+#if PY_MAJOR_VERSION < 3
     plumed_assert(Py_InitModule("plumed", functions));
+#else
+    PyObject *module = PyModule_Create(&module); // New reference
+
+    return module;
+#endif
   }
 
   void setAction(Action* action_)
