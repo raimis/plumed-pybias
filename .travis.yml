@@ -67,7 +67,7 @@ install:
   # Create a build directory
   - mkdir -pv $PYBIAS_BUILD && cd $PYBIAS_BUILD
   # Configure & build PyBias
-  - cmake $PYBIAS_SRC -DCMAKE_INSTALL_PREFIX=$PYBIAS_INSTALL
+  - cmake $PYBIAS_SRC -DCMAKE_INSTALL_PREFIX=$PYBIAS_INSTALL -DCMAKE_BUILD_TYPE=RelWithDebInfo
   - make VERBOSE=1
   - make install VERBOSE=1
 
