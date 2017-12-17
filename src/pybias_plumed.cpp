@@ -102,7 +102,12 @@ namespace bias{
     //import_array();
 
     // Import MPI4Py C-API
-    plumed_massert(!import_mpi4py(), "MPI4Py C-API import failed");
+    //plumed_massert(!import_mpi4py(), "MPI4Py C-API import failed");
+    if (import_mpi4py())
+    {
+      PyErr_Print();
+      plumed_merror("mpi4py import failed. See for an error message above");
+    }
 
     // Initialize the built-in module
 #if PY_MAJOR_VERSION < 3
