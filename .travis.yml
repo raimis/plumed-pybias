@@ -31,51 +31,61 @@ before_install:
   - PLUMED_PREFIX=$HOME/opt/plumed
   - PLUMED_URL=https://github.com/plumed/plumed2.git
   - PLUMED_SRC=$HOME/src/plumed
-  # Enable "module" command
-  # See http://askubuntu.com/questions/343692/module-load-command-does-not-work/343721
-  - module() { eval `modulecmd bash $*`; }
+
   # Clone Plumed repository
   - if [ ! -d $PLUMED_PREFIX ]; then
       git clone --branch v$PLUMED_VERSION --depth 1 $PLUMED_URL $PLUMED_SRC;
     fi
+
   # Configure Plumed
   - if [ -d $PLUMED_SRC ]; then
       cd $PLUMED_SRC &&
       ./configure --prefix=$PLUMED_PREFIX $PLUMED_CONFIG;
     fi
-  # Build & intall Plumed
+
+  # Build & install Plumed
   - if [ -d $PLUMED_SRC ]; then
       make -j 4 &&
       make install;
     fi
-  # Load Plumed module
-  - module use $PLUMED_PREFIX/lib/plumed
-  - module load modulefile
-  # Print some information about Plumed
+
+  # Load Plumed module & print info
+  # See http://askubuntu.com/questions/343692/module-load-command-does-not-work/343721
+  - module() { eval `modulecmd bash $*`; }
+  - module load $PLUMED_PREFIX/lib/plumed/modulefile
   - plumed info --root --configuration --long-version --git-version
+
   # Test Plumed
   - if [ -d $PLUMED_SRC ]; then
       make -C regtest &&
       make -C regtest checkfail;
     fi
-  # Install MPI4Py
+
+  # Fix libpython symlinks in virtualenv
+  - PYTHON_LIBRAY_PATH=$(python-config --prefix)/lib
+  - PYTHON_VIRTUAL_LIBRARY_PATH=$(dirname $(which python))/../lib
+  - cp -sv $PYTHON_LIBRAY_PATH/libpython* $PYTHON_VIRTUAL_LIBRARY_PATH
+  - ls -l $PYTHON_VIRTUAL_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=$PYTHON_VIRTUAL_LIBRARY_PATH
+
+  # Install mpi4py
   - pip install mpi4py==2.0.0
 
 install:
   - PYBIAS_SRC=$TRAVIS_BUILD_DIR
   - PYBIAS_BUILD=$HOME/pybias.build
   - PYBIAS_INSTALL=$HOME/pybias.install
-  # Create a build directory
+
+  # Create a build directory & configure PyBias
   - mkdir -pv $PYBIAS_BUILD && cd $PYBIAS_BUILD
-  # Configure & build PyBias
-  - cmake $PYBIAS_SRC -DCMAKE_INSTALL_PREFIX=$PYBIAS_INSTALL -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  - cmake $PYBIAS_SRC -DCMAKE_INSTALL_PREFIX=$PYBIAS_INSTALL
+                      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+  # Build & install PyBias
   - make VERBOSE=1
   - make install VERBOSE=1
+  - ldd $PYBIAS_INSTALL/lib/libpybias.so
 
 script:
-  - diff src/libpybias.so $PYBIAS_INSTALL/lib/libpybias.so
-  # Use a Python library from virtualenv
-  - export LD_LIBRARY_PATH=$(dirname $(ldd $(which python) | grep libpython | cut -d " " -f 3))
-  - echo $LD_LIBRARY_PATH
-  - ldd $PYBIAS_INSTALL/lib/libpybias.so
   - make test CTEST_OUTPUT_ON_FAILURE=1
+
