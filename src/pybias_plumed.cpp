@@ -68,7 +68,7 @@ namespace bias{
   }
 
   // Python module function definitions
-  static PyMethodDef functions[] = {
+  static PyMethodDef functionDefinitions[] = {
     {"getStep", getStep, METH_NOARGS, NULL},
     {"getComm", getComm, METH_NOARGS, NULL},
     {"getMultiSimComm", getMultiSimComm, METH_NOARGS, NULL},
@@ -83,12 +83,12 @@ namespace bias{
 #else
 
   // Python module definition
-  static struct PyModuleDef module = {
+  static struct PyModuleDef moduleDefinition = {
     PyModuleDef_HEAD_INIT,
     "plumed",
     NULL,
     -1,
-    functions,
+    functionDefinitions,
     NULL
   };
 
@@ -103,9 +103,9 @@ namespace bias{
 
     // Initialize the built-in module
 #if PY_MAJOR_VERSION < 3
-      plumed_assert(Py_InitModule("plumed", functions));
+      plumed_assert(Py_InitModule("plumed", functionDefinitions));
 #else
-   PyObject *module = PyModule_Create(&module); // New reference
+   PyObject *module = PyModule_Create(&moduleDefinition); // New reference
 
     return module;
 #endif
