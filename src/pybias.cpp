@@ -5,6 +5,8 @@ Copyright (c) 2017 Raimondas Galvelis
 #include "pybias.h"
 #include "pybias_plumed.h"
 
+#include <bytesobject.h> // Remove after finish support for Python 2
+
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 #include <numpy/npy_math.h>
@@ -103,8 +105,8 @@ namespace bias{
     PyObject* str = PyObject_Str(module); // New reference
     plumed_assert(str);
     Py_DECREF(module);
-    log.printf("  using numpy %s %s\n", PyString_AsString(version),
-               PyString_AsString(str));
+    log.printf("  using numpy %s %s\n", PyBytes_AsString(version),
+               PyBytes_AsString(str));
     Py_DECREF(version);
     Py_DECREF(str);
 
@@ -120,8 +122,8 @@ namespace bias{
     str = PyObject_Str(module); // New reference
     plumed_assert(str);
     Py_DECREF(module);
-    log.printf("  using mpi4py %s %s\n", PyString_AsString(version),
-               PyString_AsString(str));
+    log.printf("  using mpi4py %s %s\n", PyBytes_AsString(version),
+               PyBytes_AsString(str));
     Py_DECREF(version);
     Py_DECREF(str);
 

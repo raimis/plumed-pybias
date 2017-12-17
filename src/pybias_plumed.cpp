@@ -21,7 +21,7 @@ namespace bias{
   static PyObject* getStep(PyObject* self, PyObject* args)
   {
     plumed_assert(action);
-    return PyInt_FromLong(action->getStep());
+    return PyLong_FromLong(action->getStep());
   }
 
   // Implementation of plumed.getComm
@@ -51,7 +51,7 @@ namespace bias{
     plumed_assert(action);
     Bias *bias = dynamic_cast<Bias*>(action);
     plumed_assert(bias);
-    return PyInt_FromLong(bias->getNumberOfArguments());
+    return PyLong_FromLong(bias->getNumberOfArguments());
   }
 
   // Implementation of plumed.getNumExArgs
@@ -60,7 +60,7 @@ namespace bias{
     plumed_assert(action);
     PyBias *bias = dynamic_cast<PyBias*>(action);
     plumed_assert(bias);
-    return PyInt_FromLong(bias->getNumberOfExtraArguments());
+    return PyLong_FromLong(bias->getNumberOfExtraArguments());
   }
 
   // Python functions
