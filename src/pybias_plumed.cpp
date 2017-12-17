@@ -103,11 +103,9 @@ namespace bias{
 
     // Initialize the built-in module
 #if PY_MAJOR_VERSION < 3
-      plumed_assert(Py_InitModule("plumed", functionDefinitions));
+    plumed_assert(Py_InitModule("plumed", functionDefinitions));
 #else
-   PyObject *module = PyModule_Create(&moduleDefinition); // New reference
-
-    return module;
+    return PyModule_Create(&moduleDefinition);
 #endif
   }
 
