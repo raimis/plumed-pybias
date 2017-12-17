@@ -56,6 +56,15 @@ namespace bias{
     return 0;
   }
 
+  #if PY_MAJOR_VERSION < 3
+  void import_array_wrapper()
+#else
+  int import_array()
+#endif
+  {
+    import_array();
+  }
+
   PyBias::PyBias(const ActionOptions& ao):
   PLUMED_BIAS_INIT(ao),
   args(0)
@@ -82,6 +91,9 @@ namespace bias{
 
       //Initialize Python interpreter
       Py_Initialize();
+
+      // Import numpy C-API
+      import_array_wrapper();
 
 #if PY_MAJOR_VERSION < 3
       // Initialize the built-in module

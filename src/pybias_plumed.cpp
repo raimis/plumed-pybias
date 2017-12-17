@@ -96,7 +96,7 @@ namespace bias{
 #endif
   {
     // Import numpy C-API
-    import_array();
+    //import_array();
 
     // Import MPI4Py C-API
     plumed_massert(!import_mpi4py(), "MPI4Py C-API import failed");
