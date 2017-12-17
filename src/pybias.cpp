@@ -59,7 +59,7 @@ namespace bias{
   #if PY_MAJOR_VERSION < 3
   void import_array_wrapper()
 #else
-  int import_array_wrapper()
+  void* import_array_wrapper()
 #endif
   {
     import_array();
