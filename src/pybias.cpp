@@ -99,7 +99,11 @@ namespace bias{
     log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
 
     // Import Numpy
+#if PY_MAJOR_VERSION < 3
     import_array();
+#else
+    int ret = import_array();
+#endif
     PyObject* module = PyImport_ImportModule("numpy"); // New reference
     if (!module)
     {
