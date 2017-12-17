@@ -5,6 +5,7 @@ Copyright (c) 2017 Raimondas Galvelis
 #include "pybias.h"
 #include "pybias_plumed.h"
 
+#define PY_ARRAY_UNIQUE_SYMBOL plumed_ARRAY_API
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
 
