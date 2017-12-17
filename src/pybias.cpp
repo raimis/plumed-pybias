@@ -82,6 +82,11 @@ namespace bias{
 
       //Initialize Python interpreter
       Py_Initialize();
+
+#if PY_MAJOR_VERSION < 3
+      // Initialize the built-in module
+      initModule();
+#endif
     }
 
     // Get Python library name
@@ -142,10 +147,6 @@ namespace bias{
     // Check if all keywords have been read
     checkRead();
 
-#if PY_MAJOR_VERSION < 3
-    // Initialize the built-in module
-    initModule();
-#endif
     // Set the context of the module
     setAction(this);
 
