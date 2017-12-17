@@ -82,6 +82,17 @@ namespace bias{
       log.printf("\n");
     }
 
+    // Get Python library name
+    string PyLibPath;
+    plumed_assert(!dl_iterate_phdr(callback, (void*)&PyLibPath));
+
+    // Reload Python library globally
+    // Solve the problem with "math" module loading
+    // Cannot use DLLLoader, it loads with RTLD_LOCAL flag
+    void* handle = dlopen(PyLibPath.c_str(), RTLD_NOW|RTLD_GLOBAL);
+    if (!handle)
+      plumed_merror(dlerror()); // plumed_massert does not work here!
+
     //if (!Py_IsInitialized())
     //{
 #if PY_MAJOR_VERSION > 2
@@ -102,15 +113,15 @@ namespace bias{
     //}
 
     // Get Python library name
-    string PyLibPath;
-    plumed_assert(!dl_iterate_phdr(callback, (void*)&PyLibPath));
+    //string PyLibPath;
+    //plumed_assert(!dl_iterate_phdr(callback, (void*)&PyLibPath));
 
     // Reload Python library globally
     // Solve the problem with "math" module loading
     // Cannot use DLLLoader, it loads with RTLD_LOCAL flag
-    void* handle = dlopen(PyLibPath.c_str(), RTLD_NOW|RTLD_GLOBAL);
-    if (!handle)
-      plumed_merror(dlerror()); // plumed_massert does not work here!
+    //void* handle = dlopen(PyLibPath.c_str(), RTLD_NOW|RTLD_GLOBAL);
+    //if (!handle)
+    //  plumed_merror(dlerror()); // plumed_massert does not work here!
     link_map *map;
     if (dlinfo(handle, RTLD_DI_LINKMAP, &map))
       plumed_merror(dlerror()); // plumed_massert does not work here!
