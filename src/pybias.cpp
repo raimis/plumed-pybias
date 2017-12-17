@@ -105,7 +105,6 @@ namespace bias{
     log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
 
     // Import Numpy
-    import_array();
     PyObject* module = PyImport_ImportModule("numpy"); // New reference
     if (!module)
     {

@@ -91,14 +91,17 @@ namespace bias{
   PyMODINIT_FUNC PyInit_plumed()
 #endif
   {
-    // Import mpi4py C-API
-    plumed_massert(!import_mpi4py(), "mpi4py C-API import failed");
+    // Import numpy C-API
+    import_array();
+
+    // Import MPI4Py C-API
+    plumed_massert(!import_mpi4py(), "MPI4Py C-API import failed");
 
     // Initialize the built-in module
 #if PY_MAJOR_VERSION < 3
-    plumed_assert(Py_InitModule("plumed", functions));
+      plumed_assert(Py_InitModule("plumed", functions));
 #else
-    PyObject *module = PyModule_Create(&module); // New reference
+   PyObject *module = PyModule_Create(&module); // New reference
 
     return module;
 #endif
