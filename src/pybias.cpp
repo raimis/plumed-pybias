@@ -74,7 +74,7 @@ namespace bias{
     }
 
     if (!Py_IsInitialized())
-
+    {
 #if PY_MAJOR_VERSION > 2
       // Add a built-in module
       plumed_assert(!PyImport_AppendInittab("plumed", PyInit_plumed));
@@ -82,6 +82,7 @@ namespace bias{
 
       //Initialize Python interpreter
       Py_Initialize();
+    }
 
     // Get Python library name
     string PyLibPath;
@@ -99,11 +100,7 @@ namespace bias{
     log.printf("  using Python %s %s\n", Py_GetVersion(), map->l_name);
 
     // Import Numpy
-#if PY_MAJOR_VERSION < 3
     import_array();
-#else
-    int ret = import_array();
-#endif
     PyObject* module = PyImport_ImportModule("numpy"); // New reference
     if (!module)
     {
