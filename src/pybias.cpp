@@ -109,6 +109,8 @@ namespace bias{
 #if PY_MAJOR_VERSION < 3
       // Initialize the built-in module
       initModule();
+#else
+      plumed_assert(PyImport_ImportModule("plumed"));
 #endif
     //}
 
