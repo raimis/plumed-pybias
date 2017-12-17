@@ -5,6 +5,9 @@ Copyright (c) 2017 Raimondas Galvelis
 #include "pybias.h"
 #include "pybias_plumed.h"
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/ndarrayobject.h>
+
 #include <mpi4py/mpi4py.h>
 
 #include <plumed/core/Atoms.h>
