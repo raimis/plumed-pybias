@@ -76,4 +76,6 @@ script:
   - diff src/libpybias.so $PYBIAS_INSTALL/lib/libpybias.so
   # Use a Python library from virtualenv
   - export LD_LIBRARY_PATH=$(dirname $(ldd $(which python) | grep libpython | cut -d " " -f 3))
+  - echo $LD_LIBRARY_PATH
+  - ldd $PYBIAS_INSTALL/lib/libpybias.so
   - make test CTEST_OUTPUT_ON_FAILURE=1
